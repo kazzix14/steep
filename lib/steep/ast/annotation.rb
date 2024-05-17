@@ -54,6 +54,7 @@ module Steep
       class MethodType < Named; end
       class VarType < Named; end
       class ConstType < Named; end
+      class GuardType < Named; end
       class IvarType < Named; end
 
       class Implements

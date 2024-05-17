@@ -44,6 +44,12 @@ module Steep
           end
         end
 
+        class ReceiverIsString < Base
+          def initialize(location: nil)
+            @location = location
+          end
+        end
+
         class ReceiverIsNotNil < Base
           def initialize(location: nil)
             @location = location

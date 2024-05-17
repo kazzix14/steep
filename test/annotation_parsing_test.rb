@@ -81,6 +81,15 @@ class AnnotationParsingTest < Minitest::Test
     end
   end
 
+  def test_guard_type
+    with_factory do |factory|
+      annot = parse_annotation("@type guard method_name: String", factory: factory)
+      assert_instance_of Annotation::GuardType, annot
+      assert_equal :method_name, annot.name
+      assert_equal parse_type("String", factory: factory), annot.type
+    end
+  end
+
   def test_const_type2
     with_factory do |factory|
       annot = parse_annotation("@type const Foo: String", factory: factory)

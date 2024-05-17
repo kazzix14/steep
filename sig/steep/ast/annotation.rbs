@@ -2,7 +2,7 @@ module Steep
   module AST
     module Annotation
       type t = ReturnType | BlockType | SelfType | InstanceType | ModuleType | BreakType
-             | MethodType | VarType | ConstType | IvarType
+             | MethodType | VarType | ConstType | GuardType | IvarType
              | Implements | Dynamic
 
       type loc = RBS::Location[untyped, untyped]
@@ -60,6 +60,9 @@ module Steep
       end
 
       class ConstType < Named[Types::t, RBS::TypeName]
+      end
+
+      class GuardType < Named[Types::t, Symbol]
       end
 
       class IvarType < Named[Types::t, Symbol]

@@ -119,6 +119,46 @@ end
     end
   end
 
+  def test_call_gaurd_p
+    with_checker() do |checker|
+      source = parse_ruby("email = foo; email.guard?")
+
+      node = source.node.children[1]
+
+      call = TypeInference::MethodCall::Typed.new(
+        node: node,
+        context: TypeInference::MethodCall::TopLevelContext.new,
+        method_name: :is_a?,
+        receiver_type: parse_type("::String?"),
+        actual_method_type: parse_method_type("(::Class) -> void").yield_self do |method_type|
+          method_type.with(
+            type: method_type.type.with(
+              return_type: AST::Types::Logic::ReceiverIsString.new()
+            )
+          )
+        end,
+        method_decls: [],
+        return_type: AST::Types::Logic::ReceiverIsString.new()
+      )
+
+      typing = Typing.new(source: source, root_context: nil)
+      typing.add_typing(dig(node), AST::Types::Logic::ReceiverIsString.new(), nil)
+      typing.add_typing(dig(node, 0), parse_type("::String?"), nil)
+      typing.add_typing(dig(node, 2), parse_type("singleton(::String)"), nil)
+
+      env = type_env
+        .assign_local_variable(:email, parse_type("::String?"), nil)
+
+      interpreter = LogicTypeInterpreter.new(subtyping: checker, typing: typing, config: config)
+      truthy_result, falsy_result = interpreter.eval(env: env, node: node)
+
+      assert_equal parse_type("true"), truthy_result.type
+      assert_equal parse_type("false"), falsy_result.type
+      assert_equal parse_type("::String"), truthy_result.env[:email]
+      assert_equal parse_type("nil"), falsy_result.env[:email]
+    end
+  end
+
   def test_call_is_a_p
     with_checker() do |checker|
       source = parse_ruby("email = foo; email.is_a?(String)")

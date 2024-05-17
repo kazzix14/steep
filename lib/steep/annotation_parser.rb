@@ -45,6 +45,7 @@ module Steep
     TYPE_PARAMS = /(\[(?<params>#{PARAM}(,\s*#{PARAM})*)\])?/
 
     def parse_type(match, name = :type, location:)
+      # puts "myprint: #{match.inspect}"
       string = match[name] or raise
       st, en = match.offset(name)
       st or raise
@@ -98,6 +99,14 @@ module Steep
                                           location: location)
         end
 
+      when keyword_subject_type("guard", METHOD_NAME)
+        Regexp.last_match.yield_self do |match|
+          match or raise
+          name = match[:name] or raise
+          type = parse_type(match, location: location)
+
+          AST::Annotation::GuardType.new(name: name.to_sym, type: type, location: location)
+        end
       when keyword_subject_type("const", CONST_NAME)
         Regexp.last_match.yield_self do |match|
           match or raise

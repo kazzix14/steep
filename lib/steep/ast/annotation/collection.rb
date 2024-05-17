@@ -26,6 +26,7 @@ module Steep
 
           @var_type_annotations = {}
           @method_type_annotations = {}
+          @guard_type_annotations = {}
           @const_type_annotations = {}
           @ivar_type_annotations = {}
           @dynamic_annotations = []
@@ -36,6 +37,8 @@ module Steep
               var_type_annotations[annotation.name] = annotation
             when MethodType
               method_type_annotations[annotation.name] = annotation
+            when GuardType
+              @guard_type_annotations[annotation.name] = annotation
             when BlockType
               @block_type_annotation = annotation
             when ReturnType
@@ -81,6 +84,12 @@ module Steep
 
         def method_type(name)
           if (a = method_type_annotations[name])
+            a.type.map_type {|type| absolute_type(type) }
+          end
+        end
+
+        def guard_type(name)
+          if (a = guard_type_annotations[name])
             a.type.map_type {|type| absolute_type(type) }
           end
         end

@@ -11,6 +11,7 @@ module Steep
         attr_reader var_type_annotations: Hash[Symbol, VarType]
 
         attr_reader const_type_annotations: Hash[RBS::TypeName, ConstType]
+        attr_reader guard_type_annotations: Hash[Symbol, GuardType]
 
         attr_reader ivar_type_annotations: Hash[Symbol, IvarType]
 

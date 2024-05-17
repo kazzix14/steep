@@ -32,6 +32,10 @@ module Steep
           def initialize: (?location: untyped?) -> void
         end
 
+        class ReceiverIsString < Base
+          def initialize: (?location: untyped?) -> void
+        end
+
         #
         class ReceiverIsNotNil < Base
           def initialize: (?location: untyped?) -> void

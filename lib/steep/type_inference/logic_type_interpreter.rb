@@ -276,6 +276,7 @@ module Steep
       end
 
       def evaluate_method_call(env:, type:, receiver:, arguments:)
+        #puts "!!! <#{type}>"
         case type
         when AST::Types::Logic::ReceiverIsNil
           if receiver && arguments.size.zero?
@@ -288,6 +289,55 @@ module Steep
               env: env,
               node: receiver,
               truthy_type: truthy_receiver,
+              falsy_type: falsy_receiver
+            )
+
+            truthy_result = Result.new(type: TRUE, env: truthy_env, unreachable: false)
+            truthy_result.unreachable! if no_subtyping?(sub_type: AST::Builtin.nil_type, super_type: receiver_type)
+
+            falsy_result = Result.new(type: FALSE, env: falsy_env, unreachable: false)
+            falsy_result.unreachable! unless unwrap
+
+            [truthy_result, falsy_result]
+          end
+        when AST::Types::Logic::ReceiverIsString
+          if receiver && arguments.size.zero?
+            receiver_type = typing.type_of(node: receiver)
+            unwrap = factory.unwrap_optional(receiver_type)
+            # ここを自由に設定できるようにすれば良い
+            # これはmethod typeの一部である。method typeで変わるため
+            truthy_receiver = AST::Builtin::String.instance_type
+
+            falsy_receiver = unwrap || receiver_type
+
+            #truthy_type = factory.instance_type(TypeName("::String"))
+
+            #ObjectSpace.each_object(Steep::Source) do |source|
+            #  puts "an: <#{source.node}>"
+            #end
+            ttt = nil
+            typing.source.each_annotation do |ann|
+              # 0 is node
+              # a is annotations
+              abc = ann[1].find { |an|
+                #puts "an0: <#{an.name.intern}>"
+                # puts "an1: <#{typing.source.node}>"
+                if an.is_a?(Steep::AST::Annotation::GuardType)
+                  # an.name&.intern == typing.source.node&.children&.last&.children&.last
+                  # 該当のメソッドをソースから見つける必要がある↑みたいに
+                  an.name&.intern == :guard?
+                end
+              }
+              # puts "an: <#{abc}>"
+              ttt = abc
+            end
+
+            # truthy_type = factory.instance_type(TypeName("::Foo"))
+            truthy_type = ttt.type
+            truthy_env, falsy_env = refine_node_type(
+              env: env,
+              node: receiver,
+              truthy_type: truthy_type,
               falsy_type: falsy_receiver
             )
 
@@ -500,6 +550,7 @@ module Steep
       end
 
       def type_case_select0(type, klass)
+        # binding.irb
         instance_type = factory.instance_type(klass)
 
         case type
